@@ -1,0 +1,220 @@
+<!DOCTYPE html>
+<html lang="id">
+<head><style>
+@font-face {
+  font-family: "Optimistic";
+  font-style: normal;
+  font-weight: 400 600;
+  font-display: swap;
+  src: url("/fonts/OptimisticAI_VF_Optimized.woff2") format("woff2");
+}
+@font-face {
+  font-family: "Optimistic Mono";
+  font-style: normal;
+  font-weight: 400;
+  font-display: swap;
+  src: url("/fonts/OptimisticMono_W_TextRegular.woff2") format("woff2");
+}
+:where(html) {
+  font-family: "Optimistic", system-ui, sans-serif;
+}
+:where(code, pre, kbd, samp) {
+  font-family: "Optimistic Mono", ui-monospace, monospace;
+}
+</style>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>sisa.</title>
+<style>
+*{box-sizing:border-box;margin:0;padding:0;font-family:Inter,system-ui,sans-serif}
+body{background:#ffffff;color:#111;padding:20px;max-width:440px;margin:0 auto}
+.header{font-size:22px;font-weight:700;margin-bottom:20px}
+.row1{display:grid;grid-template-columns:1fr 1fr;gap:0;border:1px solid #eee;border-radius:16px;overflow:hidden;margin-bottom:12px}
+.col{padding:14px 16px}
+.col+.col{border-left:1px solid #eee}
+.label{font-size:10px;letter-spacing:.15em;color:#999;text-transform:uppercase;margin-bottom:6px}
+.val{font-size:18px;font-weight:600}
+.small{font-size:12px;color:#999}
+.card{border:1px solid #eee;border-radius:16px;padding:14px 16px;margin-bottom:12px;background:#fff}
+.btn{width:100%;background:#111;color:#fff;border:0;border-radius:12px;padding:14px;font-weight:600;cursor:pointer}
+.input{width:100%;border:1px solid #eee;border-radius:10px;padding:10px 12px;font-size:14px;outline:none}
+.grid3{display:grid;grid-template-columns:1fr 1fr 1fr 60px;gap:8px;margin-top:8px}
+.item{display:flex;align-items:center;justify-content:space-between;padding:12px 0;border-bottom:1px solid #f5f5f5;font-size:14px}
+.badge{font-size:11px;padding:2px 8px;border-radius:20px;border:1px solid #eee;margin-left:6px}
+.badge.warn{background:#fef3c7;border-color:#fde68a;color:#92400e}
+.badge.today{background:#111;color:#fff}
+.toast{position:fixed;bottom:20px;left:50%;transform:translateX(-50%);background:#111;color:#fff;padding:8px 14px;border-radius:20px;font-size:12px;opacity:0;transition:.2s}
+.toast.show{opacity:1}
+</style>
+</head>
+<body>
+<div class="header" style="display:flex;justify-content:space-between;align-items:center">sisa. <input type="month" id="monthLabel" style="border:1px solid #eee;border-radius:8px;padding:6px 10px;font-size:13px"></div>
+<div class="row1">
+  <div class="col">
+    <div class="label">Pendapatan</div>
+    <div id="pendapatan" class="val" contenteditable="true" inputmode="numeric">10.000.000</div>
+    <div class="small" id="saveStatus"></div>
+  </div>
+  <div class="col" id="sisaCol" style="cursor:pointer">
+    <div class="label">Sisa <span style="float:right">⎙</span></div>
+    <div id="sisa" class="val">4.650.000</div>
+    <div class="small">tap untuk salin tanpa Rp</div>
+  </div>
+</div>
+<div class="card" id="alokasiCard">
+  <div style="display:flex;justify-content:space-between;align-items:center;cursor:pointer" id="toggleAlokasi">
+    <div><span class="small">Alokasi</span> <span id="alokasiText"></span></div>
+    <div style="width:28px;height:28px;border:1px solid #eee;border-radius:50%;display:grid;place-items:center">+</div>
+  </div>
+  <div id="alokasiDetail" style="display:none;margin-top:12px">
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px">
+      <div><div class="label">Deposito</div><select id="deposito" class="input"><option>0%</option><option>5%</option><option>10%</option><option>15%</option><option>20%</option><option>25%</option><option>30%</option><option>40%</option><option>50%</option></select></div>
+      <div><div class="label">Tabungan</div><select id="tabungan" class="input"><option>0%</option><option>5%</option><option>10%</option><option>15%</option><option>20%</option><option>25%</option><option>30%</option><option>40%</option><option>50%</option></select></div>
+    </div>
+  </div>
+</div>
+<div class="label" style="margin:16px 0 8px">Pengeluaran manual + tanggal tempo</div>
+<div class="card">
+  <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px">
+    <input id="nama" class="input" placeholder="Nama">
+    <input id="nominal" class="input" placeholder="Nominal 1.000.000" inputmode="numeric">
+  </div>
+  <div class="grid3">
+    <input id="dd" class="input" placeholder="DD" type="number" min="1" max="31">
+    <input id="mm" class="input" placeholder="MM" type="number" min="1" max="12">
+    <input id="yyyy" class="input" placeholder="YYYY" type="number">
+    <input id="dateBtn" class="input" type="date">
+  </div>
+  <button class="btn" id="tambah" style="margin-top:10px">Tambah</button>
+</div>
+<div style="display:flex;justify-content:space-between;margin:16px 0 8px"><div class="label">Daftar pengeluaran</div><div class="small" id="totalInfo"></div></div>
+<div id="list"></div>
+<div id="summaryWrap" style="margin-top:24px;border-top:1px solid #eee;padding-top:16px"><div class="label">Ringkasan tiap bulan</div><div id="summary" style="margin-top:8px"></div></div><div id="toast" class="toast"></div>
+<script>
+function fmt(n){return new Intl.NumberFormat('id-ID').format(n)}
+function parseNum(s){return parseInt(String(s).replace(/[^0-9]/g,'')||'0',10)}
+let currentMonth = localStorage.getItem('sisa-current-month') || new Date().toISOString().slice(0,7); // YYYY-MM
+function getKey(){return 'sisa-'+currentMonth}
+function load(){
+  try{
+    let d=JSON.parse(localStorage.getItem(getKey())||'null');
+    if(d) return d;
+  }catch(e){}
+  return {pendapatan:10000000,deposito:20,tabungan:15,items:[{nama:'Kos',nominal:1500000,dd:28,mm:10,yyyy:2026,lunas:false},{nama:'Listrik',nominal:350000,dd:25,mm:10,yyyy:2026,lunas:false}],month:currentMonth}
+}
+function save(data){
+  try{
+    data.month=currentMonth;
+    localStorage.setItem(getKey(),JSON.stringify(data));
+    // keep index of months
+    let idx=JSON.parse(localStorage.getItem('sisa-months')||'[]');
+    if(!idx.includes(currentMonth)){idx.push(currentMonth); idx.sort(); localStorage.setItem('sisa-months',JSON.stringify(idx));}
+  }catch(e){}
+  let el=document.getElementById('saveStatus'); el.textContent='tersimpan '+currentMonth+' ✓'; setTimeout(()=>el.textContent='',1200);
+}
+function switchMonth(newMonth){
+  currentMonth=newMonth;
+  localStorage.setItem('sisa-current-month',currentMonth);
+  data=load();
+  depositoEl.value=data.deposito+'%'; tabunganEl.value=data.tabungan+'%';
+  document.getElementById('monthLabel').value=currentMonth;
+  render();
+}
+
+let data=load();
+
+function renderSummary(){
+  let months=[];
+  try{months=JSON.parse(localStorage.getItem('sisa-months')||'[]');}catch(e){}
+  if(!months.includes(currentMonth)) months.push(currentMonth);
+  let container=document.getElementById('summary');
+  container.innerHTML='';
+  months.sort().reverse().forEach(m=>{
+    try{
+      let d=JSON.parse(localStorage.getItem('sisa-'+m)||'null');
+      if(!d) return;
+      let totalAlokasi=Math.round(d.pendapatan*(d.deposito+d.tabungan)/100);
+      let totalPeng=d.items.reduce((a,b)=>a+b.nominal,0);
+      let sisa=d.pendapatan-totalAlokasi-totalPeng;
+      let div=document.createElement('div');
+      div.style.cssText='display:flex;justify-content:space-between;padding:10px 0;border-bottom:1px solid #f5f5f5;font-size:13px;cursor:pointer';
+      div.innerHTML=`<span><b>${m}</b> · ${d.items.length} item</span><span style="font-weight:600">${fmt(sisa)}</span>`;
+      div.addEventListener('click',()=>switchMonth(m));
+      container.appendChild(div);
+    }catch(e){}
+  });
+}
+
+const pendapatanEl=document.getElementById('pendapatan');
+const sisaEl=document.getElementById('sisa');
+const depositoEl=document.getElementById('deposito');
+const tabunganEl=document.getElementById('tabungan');
+const alokasiText=document.getElementById('alokasiText');
+const listEl=document.getElementById('list');
+const totalInfo=document.getElementById('totalInfo');
+function render(){
+  pendapatanEl.textContent=fmt(data.pendapatan);
+  let depositoNom=Math.round(data.pendapatan*data.deposito/100);
+  let tabunganNom=Math.round(data.pendapatan*data.tabungan/100);
+  let totalAlokasi=depositoNom+tabunganNom;
+  let totalPengeluaran=data.items.reduce((a,b)=>a+b.nominal,0);
+  let sisa=data.pendapatan-totalAlokasi-totalPengeluaran;
+  sisaEl.textContent=fmt(sisa);
+  alokasiText.textContent=`${data.deposito+data.tabungan}% → Rp ${fmt(totalAlokasi)}`;
+  totalInfo.textContent=`${data.items.length} item · Rp ${fmt(totalPengeluaran)}`;
+  listEl.innerHTML='';
+  data.items.forEach((it,i)=>{
+    let dateStr=it.dd&&it.mm&&it.yyyy? `${it.dd} ${['','Jan','Feb','Mar','Apr','Mei','Jun','Jul','Agu','Sep','Okt','Nov','Des'][it.mm]} ${it.yyyy}` : 'tanpa tempo';
+    let diff=0; if(it.dd&&it.mm&&it.yyyy){let d=new Date(it.yyyy,it.mm-1,it.dd); let now=new Date(); now.setHours(0,0,0,0); diff=Math.ceil((d-now)/86400000)}
+    let badge=diff===0?'hari ini': diff>0? `H-${diff}` : diff<0? `lewat ${Math.abs(diff)} hari` : '';
+    let badgeClass=badge==='hari ini'?'today': (badge.startsWith('H-') && diff<=3)?'warn':'';
+    let div=document.createElement('div'); div.className='item'; div.style.opacity=it.lunas?'0.5':'1';
+    div.innerHTML=`<div><b>${it.nama}</b> — ${fmt(it.nominal)} · ${dateStr} <span class="badge ${badgeClass}">${badge}</span></div><div style="display:flex;gap:8px;align-items:center"><button data-i="${i}" class="lunasBtn" style="font-size:11px;border:1px solid #eee;border-radius:20px;padding:4px 10px;background:#fff;cursor:pointer">${it.lunas?'● lunas':'○ belum'}</button><button data-i="${i}" class="delBtn" style="border:0;background:transparent;cursor:pointer;font-size:18px">×</button></div>`;
+    listEl.appendChild(div);
+  });
+  save(data);
+  renderSummary();
+}
+pendapatanEl.addEventListener('focus',()=>{pendapatanEl.textContent=String(data.pendapatan)});
+pendapatanEl.addEventListener('blur',()=>{let v=parseNum(pendapatanEl.textContent); data.pendapatan=v||0; render()});
+pendapatanEl.addEventListener('keydown',e=>{if(e.key==='Enter'){e.preventDefault();pendapatanEl.blur()}});
+document.getElementById('sisaCol').addEventListener('click',()=>{
+  let txt=sisaEl.textContent;
+  navigator.clipboard.writeText(txt).then(()=>{
+    let t=document.getElementById('toast'); t.textContent='disalin: '+txt; t.classList.add('show'); setTimeout(()=>t.classList.remove('show'),1500);
+  });
+});
+depositoEl.addEventListener('change',()=>{data.deposito=parseInt(depositoEl.value); render()});
+tabunganEl.addEventListener('change',()=>{data.tabungan=parseInt(tabunganEl.value); render()});
+document.getElementById('toggleAlokasi').addEventListener('click',()=>{
+  let d=document.getElementById('alokasiDetail'); d.style.display=d.style.display==='none'?'grid':'none';
+});
+function addItem(){
+  let nama=document.getElementById('nama').value.trim();
+  let nominal=parseNum(document.getElementById('nominal').value);
+  let dd=parseInt(document.getElementById('dd').value)||0;
+  let mm=parseInt(document.getElementById('mm').value)||0;
+  let yyyy=parseInt(document.getElementById('yyyy').value)||0;
+  let dateInput=document.getElementById('dateBtn').value;
+  if(dateInput){let p=dateInput.split('-'); yyyy=parseInt(p[0]); mm=parseInt(p[1]); dd=parseInt(p[2]);}
+  if(!nama||!nominal)return;
+  data.items.push({nama,nominal,dd,mm,yyyy,lunas:false});
+  document.getElementById('nama').value=''; document.getElementById('nominal').value=''; document.getElementById('dd').value=''; document.getElementById('mm').value=''; document.getElementById('yyyy').value=''; document.getElementById('dateBtn').value='';
+  render();
+}
+document.getElementById('tambah').addEventListener('click',addItem);
+document.getElementById('nominal').addEventListener('input',e=>{
+  let v=parseNum(e.target.value); if(v){e.target.value=fmt(v)}
+});
+listEl.addEventListener('click',e=>{
+  if(e.target.classList.contains('delBtn')){let i=parseInt(e.target.dataset.i); data.items.splice(i,1); render()}
+  if(e.target.classList.contains('lunasBtn')){let i=parseInt(e.target.dataset.i); data.items[i].lunas=!data.items[i].lunas; render()}
+});
+depositoEl.value=data.deposito+'%'; tabunganEl.value=data.tabungan+'%';
+document.getElementById('monthLabel').value=currentMonth;
+document.getElementById('monthLabel').addEventListener('change',e=>switchMonth(e.target.value));
+render();
+
+</script>
+<script>(function(){var loc=location.href.replace(/#.*$/,"");var ATTR_NAMES=["data-product-id","data-productid","data-product_id","product-id","productid","product_id","data-source-entity-id","source-entity-id","source_entity_id","data-product","data-metadata","data-meta"];var DATASET_KEYS=["productId","productid","product_id","sourceEntityId","sourceentityid","source_entity_id","product","metadata","meta"];function readProductId(value){if(typeof value!=="string"||value.length===0)return null;if(/^[0-9]{6,}$/.test(value))return value;var match=value.match(/(?:product(?:_|-)?id|source(?:_|-)?entity(?:_|-)?id)["'=:\s]+([0-9]{6,})/i);return match?match[1]:null}function extractProductId(start){for(var node=start;node&&node!==document.body;node=node.parentElement){for(var i=0;i<ATTR_NAMES.length;i++){var attrValue=node.getAttribute&&node.getAttribute(ATTR_NAMES[i]);var attrProductId=readProductId(attrValue);if(attrProductId)return attrProductId}var dataset=node.dataset||null;if(dataset){for(var j=0;j<DATASET_KEYS.length;j++){var dataValue=dataset[DATASET_KEYS[j]];var dataProductId=readProductId(dataValue);if(dataProductId)return dataProductId}}}return null}function isInlineMediaSlotElement(node){return !!(node&&node.getAttribute&&node.getAttribute("data-clippy-inline-media-slot")!==null)}function findInlineMediaSlot(start){for(var node=start;node&&node!==document.body;node=node.parentElement){if(isInlineMediaSlotElement(node))return node}return null}function readInlineMediaUrl(node){if(!node)return null;return node.getAttribute&&((node.getAttribute("data-clippy-inline-media-url")||node.getAttribute("data-url")||node.getAttribute("data_url")))||node.href||null}function stripHash(url){return String(url).replace(/#.*$/,"")}function urlsMatch(a,b){if(!a||!b)return false;try{return stripHash(new URL(a,loc).href)===stripHash(new URL(b,loc).href)}catch(_){return stripHash(a)===stripHash(b)}}function isFirstPartyReelUrl(value){try{var url=new URL(value,loc);if(url.protocol!=="https:")return false;var host=url.hostname.toLowerCase();var supported=host==="instagram.com"||host.endsWith(".instagram.com")||host==="facebook.com"||host.endsWith(".facebook.com");return supported&&/\/reels?\//i.test(url.pathname)}catch(_){return false}}function isInlineMediaUrlClick(node,href){var slot=findInlineMediaSlot(node);if(!slot)return false;var slotUrl=readInlineMediaUrl(slot);if(slotUrl)return urlsMatch(href,slotUrl);return isFirstPartyReelUrl(href)}function findDataHref(start){for(var node=start;node&&node!==document.body;node=node.parentElement){if(node.getAttribute){var href=node.getAttribute("data-href")||node.getAttribute("data-url");if(href)return{href:href,node:node}}}return null}var nativeOpen=window.open;window.open=function(url){if(parent!==window&&typeof url==="string"&&/^https?:\/\//.test(url)){parent.postMessage({type:"ecto:usercontent-link-click",href:url},"*");return null}return nativeOpen?nativeOpen.apply(window,arguments):null};document.addEventListener("click",function(e){var target=e.target instanceof Element?e.target:null;if(!target)return;if(parent===window)return;var a=target.closest?target.closest("a[href]"):null;if(a&&a.href&&/^https?:\/\//.test(a.href)&&a.href.replace(/#.*$/,"")!==loc){if(isInlineMediaUrlClick(a,a.href))return;var productId=extractProductId(target)||extractProductId(a);if(productId){e.preventDefault();parent.postMessage({type:"ecto-artifact-link-click",productId:productId},"*");return}e.preventDefault();parent.postMessage({type:"ecto:usercontent-link-click",href:a.href},"*");return}var dataHref=findDataHref(target);if(dataHref&&/^https?:\/\//.test(dataHref.href)&&dataHref.href.replace(/#.*$/,"")!==loc){if(isInlineMediaUrlClick(dataHref.node,dataHref.href))return;e.preventDefault();parent.postMessage({type:"ecto:usercontent-link-click",href:dataHref.href},"*")}},true)})();</script><script>(function(){var FOCUS_TYPE="ecto:artifact-focus-request";var CLOSE_TYPE="ecto:artifact-close-request";function focusArtifactDocument(){var body=document.body;if(!body)return;try{window.focus();}catch(e){}if(!body.hasAttribute("tabindex"))body.setAttribute("tabindex","-1");try{body.focus({preventScroll:true});}catch(e){try{body.focus();}catch(e2){}}}window.addEventListener("message",function(event){if(event.source!==window.parent)return;var data=event.data;if(!data||typeof data!=="object"||data.type!==FOCUS_TYPE)return;if(document.readyState==="loading"){document.addEventListener("DOMContentLoaded",focusArtifactDocument,{once:true});return;}focusArtifactDocument();});window.addEventListener("keydown",function(event){if(event.key!=="Escape")return;window.setTimeout(function(){if(event.defaultPrevented)return;window.parent.postMessage({type:CLOSE_TYPE},"*");},0);});})();</script></body>
+</html>
